@@ -18,7 +18,7 @@ def index(request):
     return render(
         request,
         'posts/index.html',
-        {'page': page, 'paginator': paginator, }
+        {'page': page, }
     )
 
 
@@ -31,7 +31,7 @@ def group_post(request, slug):
     return render(
         request,
         'group.html',
-        {'page': page, 'group': group, 'paginator': paginator, }
+        {'page': page, 'group': group, }
     )
 
 
@@ -70,8 +70,7 @@ def profile(request, username):
         {'page': page,
          'post': posts_all,
          'author': author,
-         'following': following,
-         'paginator': paginator, }
+         'following': following, }
     )
 
 

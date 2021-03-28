@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %} Когда нужно записать что-то по-настоящему важное {% endblock %} | Pencil </title>
+    <!-- Загрузка статики -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}">
+    <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
+</head>
+
+<body>
+    {% include 'nav.html' %}
+    <main>
+        <div class="container" style="margin-top: 2%;">
+            {% block content %}
+            <!-- Содержимое страницы -->
+            {% endblock %}
+        </div>
+    </main>
+    <footer class="bg-light text-left text-lg-start" style="margin-top: 5%;">
+        <a class="text-dark text-center p-1" href="{% url 'about:author' %}" style="margin-left: 44%">Об авторе</a>
+        <a class="text-dark text-center p-1"href="#"> &#8226; </a>
+        <a class="text-dark text-center p-1" href="{% url 'about:tech' %}"> О технологиях</a>
+        <p class="text-dark text-center p-1">Социальная сеть <span style="color:#BD2052">P</span>encil© 2020, все права защищены. </p>
+    </footer> 
+</body>
+
+</html> 

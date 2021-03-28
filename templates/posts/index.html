@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Последние обновления на сайте{% endblock %}
+
+{% block content %}
+
+        <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 2%;">
+            <h3>Последние обновления на сайте</h3>
+            {% include "menu.html" with index=True %}
+        </div>
+
+    <div class="row">
+        {% load cache %}
+            {% cache 20 index_page %}
+                {% for post in page %}
+                    <div class="col-md-6"> 
+                        {% include "post_item.html" %}
+                    </div>
+                
+                    {% if not forloop.last %}<hr>{% endif %}
+                {% endfor %}
+        {% endcache %}
+    </div>
+    {% if page.has_other_pages %}
+        {% include "paginator.html" with items=page paginator=paginator%}
+    {% endif %}
+
+{% endblock %} 

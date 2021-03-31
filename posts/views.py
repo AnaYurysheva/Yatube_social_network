@@ -30,7 +30,7 @@ def group_post(request, slug):
     page = paginator.get_page(page_number)
     return render(
         request,
-        'group.html',
+        'posts/group.html',
         {'page': page, 'group': group, }
     )
 
@@ -38,14 +38,7 @@ def group_post(request, slug):
 @login_required
 def new_post(request):
     is_new = True
-    if request.method != 'POST':
-        form = PostForm()
-        return render(
-            request,
-            'posts/new_post.html',
-            {'form': form, 'is_new': is_new, })
-
-    form = PostForm(request.POST, request.FILES)
+    form = PostForm(request.POST or None, request.FILES or None)
     if not form.is_valid():
         return render(
             request,
@@ -100,18 +93,6 @@ def post_edit(request, username, post_id):
     form = PostForm(
         request.POST or None,
         files=request.FILES or None,
-        instance=post)
-
-    if request.method != 'POST':
-        form = PostForm(instance=post)
-        return render(
-            request,
-            'posts/new_post.html',
-            {'form': form, 'post': post, 'is_edit': is_edit, })
-
-    form = PostForm(
-        request.POST or None,
-        files=request.FILES or None,
         instance=post
     )
 
@@ -143,19 +124,12 @@ def server_error(request):
 @login_required
 def add_comment(request, username, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    if request.method != 'POST':
-        form = CommentForm()
-        return render(
-            request,
-            'comments.html',
-            {'form': form, 'post': post, })
-
-    form = CommentForm(request.POST)
+    form = CommentForm(request.POST or None)
     if not form.is_valid():
         return render(
             request,
-            'comments.html',
-            {'form': form, })
+            'include/comments.html',
+            {'form': form, 'post': post, })
 
     comment = form.save(commit=False)
     comment.author = request.user
@@ -166,14 +140,14 @@ def add_comment(request, username, post_id):
 
 @login_required
 def follow_index(request):
-    author_list = User.objects.filter(following__author__following__user=True)
+    author_list = Follow.objects.filter(user=request.user)
     post_list = Post.objects.filter(author__following__user=request.user)
     paginator = Paginator(post_list, page_amount)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     return render(
         request,
-        'follow.html',
+        'posts/follow.html',
         {'page': page,
          'paginator': paginator,
          'post': post_list,

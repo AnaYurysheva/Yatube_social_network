@@ -1,10 +1,9 @@
 import shutil
 import tempfile
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from posts.constants import form_data_for_edit
@@ -12,13 +11,14 @@ from posts.forms import CommentForm, PostForm
 from posts.models import Comment, Post
 
 User = get_user_model()
+MEDIA_ROOT = tempfile.mkdtemp()
 
 
+@override_settings(MEDIA_ROOT=MEDIA_ROOT)
 class PostCreateEditFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        settings.MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
         cls.form = PostForm()
         cls.user = User.objects.create_user(username='AnnaY')
         cls.post = Post.objects.create(text='Tododo', author=cls.user)
@@ -27,7 +27,7 @@ class PostCreateEditFormTests(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
+        shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
         super().tearDownClass()
 
     def test_create_post(self):
@@ -56,6 +56,7 @@ class PostCreateEditFormTests(TestCase):
             follow=True
         )
 
+        self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, reverse('posts:index'))
         self.assertEqual(Post.objects.count(), post_count + 1)
         self.assertTrue(

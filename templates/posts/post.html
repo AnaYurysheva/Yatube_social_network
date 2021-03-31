@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "include/base.html" %}
 {% block header %}Страница пользователя {{post.author.get_full_name}}{% endblock %}
 {% block content %}
 {% load user_filters %}
@@ -7,10 +7,10 @@
 <main role="main" class="container">
     <div class="row">
 
-        {% include 'post_page.html' %}
+        {% include 'include/auth_page.html' %}
 
             <div class="col-md-9" style="margin-right: 0%;">
-                {% include 'post_item.html' %}  
+                {% include 'include/post_item.html' %}  
                      
 </main> 
 {% endblock %} 

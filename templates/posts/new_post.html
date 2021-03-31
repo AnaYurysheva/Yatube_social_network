@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "include/base.html" %}
 {% block title %}Новый пост{% endblock %}
 {% block content %}
 {% load user_filters %}
@@ -24,7 +24,7 @@
                                     {{ field|addclass:"form-control" }}
                                     
                                     {% if field.help_text %}
-                                    <small id="{{ field.id_for_label }}-help" class="form-text text-muted">{{ field.help_text|safe }}</small>
+                                       <small id="{{ field.id_for_label }}-help" class="form-text text-muted">{{ field.help_text|safe }}</small>
                                     {% endif %}
                                 </div>
                         </div>

@@ -5,7 +5,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>{% block title %} Когда нужно записать что-то по-настоящему важное {% endblock %} | Pencil </title>
-    <!-- Загрузка статики -->
     {% load static %}
     <link rel="stylesheet" href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}">
     <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
@@ -13,11 +12,10 @@
 </head>
 
 <body>
-    {% include 'nav.html' %}
+    {% include 'include/nav.html' %}
     <main>
         <div class="container" style="margin-top: 2%;">
             {% block content %}
-            <!-- Содержимое страницы -->
             {% endblock %}
         </div>
     </main>

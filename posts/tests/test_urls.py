@@ -105,7 +105,7 @@ class PostURLTests(TestCase):
     def test_urls_uses_correct_template(self):
         templates_url_names = {
             'posts/index.html': reverse('posts:index'),
-            'group.html': reverse(
+            'posts/group.html': reverse(
                 'posts:group',
                 args=[PostURLTests.group.slug, ]),
             'posts/profile.html': reverse(
@@ -117,9 +117,10 @@ class PostURLTests(TestCase):
             'posts/new_post.html': reverse(
                 'posts:post_edit',
                 args=[PostURLTests.post.author, PostURLTests.post.pk, ]),
-            'comments.html': reverse(
+            'include/comments.html': reverse(
                 'posts:post',
                 args=[PostURLTests.post.author, PostURLTests.post.pk, ]),
+            'posts/follow.html': reverse('posts:follow_index'),
         }
         for template, reverse_name in templates_url_names.items():
             with self.subTest():

@@ -68,6 +68,7 @@ class Comment(models.Model):
     )
     text = models.TextField(
         verbose_name='Текст',
+        help_text='Будьте добрее друг к другу:)'
     )
     created = models.DateTimeField(
         'published date',
@@ -87,3 +88,10 @@ class Follow(models.Model):
         on_delete=models.CASCADE,
         related_name='following',
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'user'],
+                name='unique_follow')
+        ]

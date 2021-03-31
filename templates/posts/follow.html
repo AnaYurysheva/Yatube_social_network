@@ -1,19 +1,19 @@
-{% extends "base.html" %}
+{% extends "include/base.html" %}
 {% block title %}Последние обновления в ленте подписок{% endblock %}
 
 {% block content %}
 
     <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 2%;">
         <h3>Последние обновления в ленте подписок</h3>
-        {% include "menu.html" with index=True %}
+        {% include "include/menu.html" with index=True %}
     </div>
     {% for post in page %}
-        {% include "post_item.html" %}
+        {% include "include/post_item.html" %}
         {% if not forloop.last %}<hr>{% endif %}
     {% endfor %}
 
     {% if page.has_other_pages %}
-        {% include "paginator.html" with items=page paginator=paginator%}
+        {% include "include/paginator.html" with items=page paginator=paginator%}
     {% endif %}
 
 {% endblock %} 

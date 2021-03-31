@@ -2,28 +2,28 @@
 {% load user_filters %}
 
 {% if user.is_authenticated %}
-<div class="card my-4" >
-    <form method="post" action="{% url 'posts:add_comment' username=user.username post_id=post.id%}"  style="width: 100%;">
-        {% csrf_token %}
+    <div class="card my-4" >
+        <form method="post" action="{% url 'posts:add_comment' username=user.username post_id=post.id%}"  style="width: 100%;">
+            {% csrf_token %}
+            <h6 class="card-header">Добавить комментарий:</h6>
+            <div class="card-body">
+                <div class="form-group">
+                    {{ form.text|addclass:"form-control" }}
+                </div>
+                <button type="submit" class="btn btn-primary">Отправить</button>
+            </div>
+        </form>
+    </div>
+{% else %}
+    <div class="card my-4">
         <h6 class="card-header">Добавить комментарий:</h6>
         <div class="card-body">
             <div class="form-group">
-                {{ form.text|addclass:"form-control" }}
+                <span class="card-text" >Оставлять комментарии могут только зарегистрированные пользователи.</span>
             </div>
-            <button type="submit" class="btn btn-primary">Отправить</button>
+                <a class="btn btn-primary" href="{% url 'signup' %}" >Страница регистрации</a>
         </div>
-    </form>
-</div>
-{% else %}
-<div class="card my-4">
-    <h6 class="card-header">Добавить комментарий:</h6>
-    <div class="card-body">
-        <div class="form-group">
-            <span class="card-text" >Оставлять комментарии могут только зарегистрированные пользователи.</span>
-        </div>
-            <a class="btn btn-primary" href="{% url 'signup' %}" >Страница регистрации</a>
     </div>
-</div>
 {% endif %}
 
 <div class="comments" style="width: 100%;">
@@ -35,14 +35,14 @@
                         
                             <div class="media-heading">
                                 <div class='row' style="margin-top: 2%;"> 
-                                    <div class="author"> {{comment.author.get_full_name}} |
+                                    <div class="author"> {{ comment.author.get_full_name }} |
                                         <span class="date">{{ comment.created|date:"d M Y" }}</span>
                                     </div>
                                 </div>
                             </div>
                     </div>
             </li>
-            {{comment.text}}<hr>
+            {{ comment.text }}<hr>
             {% endfor %}  
 
 </div>

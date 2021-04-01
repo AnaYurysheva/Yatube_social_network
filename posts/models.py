@@ -75,7 +75,7 @@ class Comment(models.Model):
         auto_now_add=True)
 
     def __str__(self):
-        return f'{self.author, self.text}'
+        return f'{self.author, tw.shorten(self.text, 15),}'
 
 
 class Follow(models.Model):
@@ -90,8 +90,8 @@ class Follow(models.Model):
     )
 
     class Meta:
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['author', 'user'],
+                fields=('author', 'user'),
                 name='unique_follow')
-        ]
+        )

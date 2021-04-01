@@ -12,11 +12,11 @@
       {% endif %}
       {% for i in page.paginator.page_range %}
         {% if page.number == i %}
-        <li class="page-item active">
-          <span class="btn btn-dark">{{ i }}
-            <span class="sr-only">(текущая)</span>
-          </span>
-        </li>
+          <li class="page-item active">
+            <span class="btn btn-dark">{{ i }}
+              <span class="sr-only">(текущая)</span>
+            </span>
+          </li>
         {% else %}
           <li class="page-item" >
             <a class="btn btn-outline-dark" href="?page={{ i }}">{{ i }}</a>

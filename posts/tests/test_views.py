@@ -1,5 +1,6 @@
 import shutil
 import tempfile
+from http import HTTPStatus
 
 from django import forms
 from django.conf import settings
@@ -8,14 +9,14 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
+from posts.constants import form_data_for_edit
 from posts.models import Comment, Follow, Group, Post
 
 User = get_user_model()
 MEDIA_ROOT = tempfile.mkdtemp()
 
 
-def context_pages(self, context_dict, response):
-    post_object = response.context[context_dict][0]
+def context_pages(self, post_object):
     post_author = post_object.author
     post_group = post_object.group
     post_text = post_object.text
@@ -83,36 +84,43 @@ class PostViewsTest(TestCase):
         super().tearDownClass()
 
     def test_index_page_shows_corrext_context(self):
+        response = self.authorized_client_for_follow.get(
+            reverse('posts:index')
+        )
         context_pages(
             self,
-            context_dict='page',
-            response=self.authorized_client_for_follow.get(
-                reverse('posts:index')))
+            post_object=response.context['page'][0]
+        )
 
     def test_group_page_shows_correct_context(self):
+        response = self.authorized_client_for_follow.get(
+            reverse(
+                'posts:group',
+                args=[PostViewsTest.group.slug, ])
+        )
         context_pages(
             self,
-            context_dict='page',
-            response=self.authorized_client_for_follow.get(
-                reverse(
-                    'posts:group',
-                    args=[PostViewsTest.group.slug, ])))
+            post_object=response.context['page'][0],
+        )
 
     def test_profile_page_shows_correct_context(self):
+        response = self.authorized_client_for_follow.get(
+            reverse(
+                'posts:profile',
+                args=[PostViewsTest.post.author, ])
+        )
         context_pages(
             self,
-            context_dict='page',
-            response=self.authorized_client_for_follow.get(
-                reverse(
-                    'posts:profile',
-                    args=[PostViewsTest.post.author, ])))
+            post_object=response.context['page'][0],
+        )
 
     def test_follow_page_shows_correct_context(self):
+        response = self.authorized_client_for_follow.get(
+            reverse('posts:follow_index',))
         context_pages(
             self,
-            context_dict='page',
-            response=self.authorized_client_for_follow.get(
-                reverse('posts:follow_index',)))
+            post_object=response.context['page'][0],
+        )
 
     def test_post_id_page_show_correct_context(self):
         response = self.authorized_client.get(
@@ -120,18 +128,10 @@ class PostViewsTest(TestCase):
                 'posts:post',
                 args=[PostViewsTest.post.author, PostViewsTest.post.pk])
         )
-
-        post_object = response.context['post']
-        post_author = post_object.author
-        post_group = post_object.group
-        post_text = post_object.text
-        post_image = post_object.image
-        post_pub_date = post_object.pub_date
-        self.assertEqual(post_author, PostViewsTest.post.author)
-        self.assertEqual(post_text, PostViewsTest.post.text)
-        self.assertEqual(post_group, PostViewsTest.post.group)
-        self.assertEqual(post_image, PostViewsTest.post.image)
-        self.assertEqual(post_pub_date, PostViewsTest.post.pub_date)
+        context_pages(
+            self,
+            post_object=response.context['post'],
+        )
 
         form_fields = {
             'text': forms.fields.CharField,
@@ -159,7 +159,13 @@ class PostViewsTest(TestCase):
         response = self.authorized_client_for_edit.get(
             reverse(
                 'posts:post_edit',
-                args=[PostViewsTest.post.author, PostViewsTest.post.pk, ])
+                args=[PostViewsTest.post.author, PostViewsTest.post.pk, ]),
+            data=form_data_for_edit,
+            follow=True,
+        )
+        context_pages(
+            self,
+            post_object=response.context['post'],
         )
         form_fields = {
             'text': forms.fields.CharField,
@@ -181,27 +187,40 @@ class PostViewsTest(TestCase):
             text='Testing text',
         )
         self.assertTrue(Comment.objects.count(), comment_count + 1)
+        self.assertTrue(
+            Comment.objects.filter(
+                post=PostViewsTest.post,
+                author=self.user,
+                text='Testing text',
+            ).exists()
+        )
 
     def test_comment_for_anonymous(self):
         response = self.guest_client.get(reverse(
             'posts:add_comment',
             args=[PostViewsTest.post.author, PostViewsTest.post.pk, ]))
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_follow_for_authorized(self):
         follow_count = Follow.objects.count()
 
         self.follow = Follow.objects.create(
             user=self.user,
-            author=PostViewsTest.user_for_edit
+            author=PostViewsTest.user_for_edit,
         )
         self.assertTrue(Follow.objects.count(), follow_count + 1)
+        self.assertTrue(
+            Follow.objects.filter(
+                user=self.user,
+                author=PostViewsTest.user_for_edit,
+            ).exists()
+        )
 
     def test_follow_for_anonymous(self):
         response = self.guest_client.get(reverse(
             'posts:profile_follow',
             args=[PostViewsTest.post.author, ]))
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_unfollow_for_authorized(self):
         follow_count = Follow.objects.count()
@@ -242,7 +261,7 @@ class PaginatorTest(TestCase):
         self.assertEqual(len(response.context.get('page').object_list), 10)
 
     def test_index_second_page_containse_three_records(self):
-        response = self.client.get(reverse('posts:index') + '?page=2')
+        response = self.client.get(reverse('posts:index'), {'page': 2},)
         self.assertEqual(len(response.context.get('page').object_list), 3)
 
     def test_group_first_page_containse_ten_records(self):
@@ -256,5 +275,7 @@ class PaginatorTest(TestCase):
     def test_group_second_page_containse_three_records(self):
         response = self.client.get(
             reverse(
-                ('posts:group'), args=[PaginatorTest.group.slug]) + '?page=2')
+                ('posts:group'),
+                args=[PaginatorTest.group.slug]),
+            {'page': 2},)
         self.assertEqual(len(response.context.get('page').object_list), 3)

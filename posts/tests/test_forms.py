@@ -79,9 +79,13 @@ class PostCreateEditFormTests(TestCase):
             follow=True
         )
 
-        self.assertRedirects(response, reverse('posts:post',
-                             args=[PostCreateEditFormTests.post.author,
-                                   PostCreateEditFormTests.post.pk]))
+        self.assertRedirects(
+            response,
+            reverse(
+                'posts:post',
+                args=[PostCreateEditFormTests.post.author,
+                      PostCreateEditFormTests.post.pk, ])
+        )
         self.assertEqual(Post.objects.count(), post_count)
         self.assertTrue(
             Post.objects.filter(

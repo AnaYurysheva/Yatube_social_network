@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.test import Client, TestCase
@@ -29,98 +31,62 @@ class PostURLTests(TestCase):
         self.authorized_client_no_edit.force_login(self.user_no_edit)
 
     def test_home_url_exists_at_desired_location(self):
-        response = self.guest_client.get(reverse('posts:index'))
-        self.assertEqual(response.status_code, 200)
+        response = self.guest_client.get('/')
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_group_url_exists_at_desired_location(self):
-        response = self.authorized_client_no_edit.get(
-            reverse(
-                'posts:group',
-                args=[PostURLTests.group.slug])
-        )
-        self.assertEqual(response.status_code, 200)
+        response = self.authorized_client_no_edit.get('/group/test-group/')
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_post_creation_url_redirect_anonymous(self):
-        response = self.guest_client.get(
-            reverse('posts:new_post'))
-        self.assertEqual(response.status_code, 302)
+        response = self.guest_client.get('/new/')
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_post_creation_url_exists_at_desired_location(self):
-        response = self.authorized_client_no_edit.get(
-            reverse('posts:new_post'))
-        self.assertEqual(response.status_code, 200)
+        response = self.authorized_client_no_edit.get('/new/')
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_profile_url_exists_at_desired_location(self):
-        response = self.authorized_client_no_edit.get(
-            reverse(
-                'posts:profile',
-                args=[PostURLTests.post.author])
-        )
-        self.assertEqual(response.status_code, 200)
+        response = self.authorized_client_no_edit.get('/AnnaY/')
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_post_id_url_exists_at_desired_location(self):
-        response = self.authorized_client_no_edit.get(
-            reverse(
-                'posts:post',
-                args=[PostURLTests.post.author, PostURLTests.post.pk])
-        )
-        self.assertEqual(response.status_code, 200)
+        response = self.authorized_client_no_edit.get('/AnnaY/1/')
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_post_id_edit_url_exists_at_desired_location(self):
-        response = self.authorized_client_edit.get(
-            reverse(
-                'posts:post_edit',
-                args=[PostURLTests.post.author, PostURLTests.post.pk])
-        )
-        self.assertEqual(response.status_code, 200)
+        response = self.authorized_client_edit.get('/AnnaY/1/edit/')
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_post_id_edit_url_redirect_no_author(self):
-        response = self.authorized_client_no_edit.get(
-            reverse(
-                'posts:post_edit',
-                args=[PostURLTests.post.author, PostURLTests.post.pk])
-        )
-        self.assertEqual(response.status_code, 302)
+        response = self.authorized_client_no_edit.get('/AnnaY/1/edit/')
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_404_page_not_found(self):
         response = self.authorized_client_no_edit.get('/missing/')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
     def test_post_id_edit_url_redirect_anonymous(self):
-        response = self.guest_client.get(
-            reverse(
-                'posts:post_edit',
-                args=[PostURLTests.post.author, PostURLTests.post.pk])
-        )
-        self.assertEqual(response.status_code, 302)
+        response = self.guest_client.get('/AnnaY/1/edit/')
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_comment_url_redirect_anonymous(self):
-        response = self.guest_client.get(
-            reverse(
-                'posts:add_comment',
-                args=[PostURLTests.post.author, PostURLTests.post.pk])
-        )
-        self.assertEqual(response.status_code, 302)
+        response = self.guest_client.get('/AnnaY/1/comment')
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_follow_url_exists_at_desired_location(self):
+        response = self.authorized_client_no_edit.get('/follow/')
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_urls_uses_correct_template(self):
         templates_url_names = {
-            'posts/index.html': reverse('posts:index'),
-            'posts/group.html': reverse(
-                'posts:group',
-                args=[PostURLTests.group.slug, ]),
-            'posts/profile.html': reverse(
-                'posts:profile',
-                args=[PostURLTests.post.author, ]),
-            'posts/post.html': reverse(
-                'posts:post',
-                args=[PostURLTests.post.author, PostURLTests.post.pk, ]),
-            'posts/new_post.html': reverse(
-                'posts:post_edit',
-                args=[PostURLTests.post.author, PostURLTests.post.pk, ]),
-            'include/comments.html': reverse(
-                'posts:post',
-                args=[PostURLTests.post.author, PostURLTests.post.pk, ]),
-            'posts/follow.html': reverse('posts:follow_index'),
+            'index.html': '/',
+            'group.html': '/group/test-group/',
+            'profile.html': '/AnnaY/',
+            'post.html': '/AnnaY/1/',
+            'new_post.html': '/AnnaY/1/edit/',
+            'include/comments.html': '/AnnaY/1/',
+            'follow.html': '/follow/',
         }
         for template, reverse_name in templates_url_names.items():
             with self.subTest():
@@ -128,16 +94,16 @@ class PostURLTests(TestCase):
                 self.assertTemplateUsed(response, template)
 
     def test_post_new_uses_correct_template(self):
-        response = self.authorized_client_edit.get(reverse('posts:new_post'))
-        self.assertTemplateUsed(response, 'posts/new_post.html')
+        response = self.authorized_client_edit.get('/new/')
+        self.assertTemplateUsed(response, 'new_post.html')
 
     def test_cache_index_page(self):
-        response = self.authorized_client_no_edit.get(reverse('posts:index'))
+        response = self.authorized_client_no_edit.get('/')
         last_cache_post = response.content
 
         self.post = Post.objects.create(text='new', author=self.user_no_edit)
 
-        response = self.authorized_client_no_edit.get(reverse('posts:index'))
+        response = self.authorized_client_no_edit.get('/')
         current_cache_post = response.content
         self.assertEqual(
             last_cache_post,
@@ -146,7 +112,7 @@ class PostURLTests(TestCase):
 
         cache.clear()
 
-        response = self.authorized_client_no_edit.get(reverse('posts:index'))
+        response = self.authorized_client_no_edit.get('/')
         new_cache_post = response.content
         self.assertNotEqual(
             current_cache_post,

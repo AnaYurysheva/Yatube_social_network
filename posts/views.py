@@ -17,7 +17,7 @@ def index(request):
     page = paginator.get_page(page_number)
     return render(
         request,
-        'posts/index.html',
+        'index.html',
         {'page': page, }
     )
 
@@ -30,7 +30,7 @@ def group_post(request, slug):
     page = paginator.get_page(page_number)
     return render(
         request,
-        'posts/group.html',
+        'group.html',
         {'page': page, 'group': group, }
     )
 
@@ -42,7 +42,7 @@ def new_post(request):
     if not form.is_valid():
         return render(
             request,
-            'posts/new_post.html',
+            'new_post.html',
             {'form': form, 'is_new': is_new, })
     post = form.save(commit=False)
     post.author = request.user
@@ -59,7 +59,7 @@ def profile(request, username):
     page = paginator.get_page(page_number)
     return render(
         request,
-        'posts/profile.html',
+        'profile.html',
         {'page': page,
          'post': posts_all,
          'author': author,
@@ -75,7 +75,7 @@ def post_view(request, username, post_id):
     form = CommentForm()
     return render(
         request,
-        'posts/post.html',
+        'post.html',
         {'post': post,
          'author': author,
          'comments': comments,
@@ -99,7 +99,7 @@ def post_edit(request, username, post_id):
     if not form.is_valid():
         return render(
             request,
-            'posts/new_post.html',
+            'new_post.html',
             {'form': form, 'post': post, 'is_edit': is_edit, })
 
     post = form.save(commit=False)
@@ -147,7 +147,7 @@ def follow_index(request):
     page = paginator.get_page(page_number)
     return render(
         request,
-        'posts/follow.html',
+        'follow.html',
         {'page': page,
          'paginator': paginator,
          'post': post_list,
@@ -167,5 +167,6 @@ def profile_follow(request, username):
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
     if author != request.user:
-        Follow.objects.filter(user=request.user, author=author).delete()
+        if Follow.objects.filter(user=request.user, author=author).exists():
+            Follow.objects.filter(user=request.user, author=author).delete()
     return redirect('posts:profile', username=username)

@@ -30,19 +30,19 @@
     <h6 class="title-comments" style="margin-top: 2%; margin-left: 2%;"> Комментарии ({{comments.count}})</h6>
     <ul class="media-list">
             {% for comment in comments %}
-            <li class="media">
-                    <div class="media-body">
-                        
-                            <div class="media-heading">
-                                <div class='row' style="margin-top: 2%;"> 
-                                    <div class="author"> {{ comment.author.get_full_name }} |
-                                        <span class="date">{{ comment.created|date:"d M Y" }}</span>
+                <li class="media">
+                        <div class="media-body">
+                            
+                                <div class="media-heading">
+                                    <div class='row' style="margin-top: 2%;"> 
+                                        <div class="author"> {{ comment.author.get_full_name }} |
+                                            <span class="date">{{ comment.created|date:"d M Y" }}</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                    </div>
-            </li>
-            {{ comment.text }}<hr>
+                        </div>
+                </li>
+                {{ comment.text }}<hr>
             {% endfor %}  
 
 </div>

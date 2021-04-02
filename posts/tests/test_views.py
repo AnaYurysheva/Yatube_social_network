@@ -16,20 +16,6 @@ User = get_user_model()
 MEDIA_ROOT = tempfile.mkdtemp()
 
 
-def context_pages(self, post_object):
-    post_author = post_object.author
-    post_group = post_object.group
-    post_text = post_object.text
-    post_image = post_object.image
-    post_pub_date = post_object.pub_date
-    return (
-        self.assertEqual(post_author, PostViewsTest.post.author),
-        self.assertEqual(post_text, PostViewsTest.post.text),
-        self.assertEqual(post_group, PostViewsTest.post.group),
-        self.assertEqual(post_image, PostViewsTest.post.image),
-        self.assertEqual(post_pub_date, PostViewsTest.post.pub_date),)
-
-
 @override_settings(MEDIA_ROOT=MEDIA_ROOT)
 class PostViewsTest(TestCase):
     @classmethod
@@ -83,12 +69,24 @@ class PostViewsTest(TestCase):
         shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
         super().tearDownClass()
 
+    def check_post_context(self, post_object):
+        post_author = post_object.author
+        post_group = post_object.group
+        post_text = post_object.text
+        post_image = post_object.image
+        post_pub_date = post_object.pub_date
+        return (
+            self.assertEqual(post_author, PostViewsTest.post.author),
+            self.assertEqual(post_text, PostViewsTest.post.text),
+            self.assertEqual(post_group, PostViewsTest.post.group),
+            self.assertEqual(post_image, PostViewsTest.post.image),
+            self.assertEqual(post_pub_date, PostViewsTest.post.pub_date),)
+
     def test_index_page_shows_corrext_context(self):
         response = self.authorized_client_for_follow.get(
             reverse('posts:index')
         )
-        context_pages(
-            self,
+        self.check_post_context(
             post_object=response.context['page'][0]
         )
 
@@ -98,8 +96,7 @@ class PostViewsTest(TestCase):
                 'posts:group',
                 args=[PostViewsTest.group.slug, ])
         )
-        context_pages(
-            self,
+        self.check_post_context(
             post_object=response.context['page'][0],
         )
 
@@ -109,16 +106,14 @@ class PostViewsTest(TestCase):
                 'posts:profile',
                 args=[PostViewsTest.post.author, ])
         )
-        context_pages(
-            self,
+        self.check_post_context(
             post_object=response.context['page'][0],
         )
 
     def test_follow_page_shows_correct_context(self):
         response = self.authorized_client_for_follow.get(
             reverse('posts:follow_index',))
-        context_pages(
-            self,
+        self.check_post_context(
             post_object=response.context['page'][0],
         )
 
@@ -128,8 +123,7 @@ class PostViewsTest(TestCase):
                 'posts:post',
                 args=[PostViewsTest.post.author, PostViewsTest.post.pk])
         )
-        context_pages(
-            self,
+        self.check_post_context(
             post_object=response.context['post'],
         )
 
@@ -163,8 +157,7 @@ class PostViewsTest(TestCase):
             data=form_data_for_edit,
             follow=True,
         )
-        context_pages(
-            self,
+        self.check_post_context(
             post_object=response.context['post'],
         )
         form_fields = {
